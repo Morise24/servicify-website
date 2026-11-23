@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102A43">
+<title>Servicify | Find the right service</title>
+<style>
+:root{--navy:#102A43;--turq:#20C5B5;--ink:#183247;--muted:#66798a;--bg:#f4f8fa;--line:#e3ebef;--white:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:var(--navy);color:white;padding:16px max(16px,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}.mark{width:30px;height:30px;border:3px solid var(--turq);border-radius:9px;transform:rotate(45deg)}
+nav{display:flex;gap:8px;align-items:center}button,.btn{border:0;border-radius:10px;padding:12px 15px;font-weight:700;cursor:pointer;font-size:14px}.navbtn{background:transparent;color:#dce8ef}.primary{background:var(--turq);color:#062c36}.secondary{background:white;color:var(--navy);border:1px solid var(--line)}
+main{max-width:1100px;margin:auto;padding:26px 18px 60px}.hero{background:linear-gradient(135deg,#102A43,#17445a);border-radius:22px;padding:38px 24px;color:white}.eyebrow{color:#8be7dc;text-transform:uppercase;font-size:12px;letter-spacing:1.5px;font-weight:800}.hero h1{font-size:clamp(30px,6vw,50px);line-height:1.08;max-width:650px;margin:12px 0}.hero p{color:#d5e2e9;max-width:550px;line-height:1.6}.searchbox{background:white;border-radius:14px;padding:10px;display:grid;grid-template-columns:1.3fr 1fr auto;gap:8px;max-width:780px;margin-top:22px}.searchbox input,.searchbox select{width:100%;border:0;padding:12px;color:var(--ink);font:inherit;outline:none;background:white}
+.sectionhead{margin:30px 0 14px}.sectionhead h2{margin:0;color:var(--navy);font-size:23px}.sectionhead p{margin:5px 0 0;color:var(--muted);font-size:14px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.category{background:white;border:1px solid var(--line);border-radius:15px;padding:17px;text-align:left;min-height:105px}.category strong{display:block;margin-top:10px;color:var(--navy)}.emoji{font-size:25px}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:18px}.panel h3{margin:0 0 8px;color:var(--navy)}.panel p{color:var(--muted);line-height:1.55;margin:0}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+footer{background:#0b2032;color:#c8d7df;padding:26px 18px;text-align:center;font-size:13px}
+.modal{display:none;position:fixed;inset:0;background:#071827bb;z-index:10;padding:14px;overflow:auto}.modal.open{display:grid;place-items:center}.dialog{background:white;border-radius:18px;padding:22px;width:min(100%,520px);max-height:94vh;overflow:auto}.dialog h2{color:var(--navy);margin:0 0 8px}.dialog p{color:var(--muted);line-height:1.5}.close{float:right;background:#edf3f5;color:var(--navy);padding:8px 11px}.field{display:block;margin:13px 0}.field span{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field select{width:100%;border:1px solid var(--line);border-radius:9px;padding:12px;font:inherit}.status{padding:11px;border-radius:9px;background:#eef7f6;color:#145e57;margin:12px 0;font-size:14px;display:none}.status.error{background:#fff0ef;color:#9b2820}.wide{width:100%;margin-top:8px}.muted{font-size:12px;color:var(--muted)}
+@media(max-width:700px){header{padding:13px 14px}.navbtn{display:none}.hero{padding:28px 18px}.searchbox{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><span class="mark"></span> Servicify</div>
+ <nav><button class="navbtn" onclick="showHow()">How it works</button><button class="navbtn" onclick="openProvider()">Join as a provider</button><button class="primary" onclick="openAuth('login')">Sign in</button></nav>
+</header>
+<main>
+ <section class="hero">
+  <div class="eyebrow">Your local service marketplace</div>
+  <h1>Find the right service. Connect with the right people.</h1>
+  <p>Discover independent professionals and businesses around Durban. Explore services, compare options and get in touch.</p>
+  <div class="searchbox">
+   <select id="serviceSearch"><option value="">What service do you need?</option></select>
+   <input id="areaSearch" placeholder="Suburb or area (e.g. Umlazi)">
+   <button class="primary" onclick="searchProviders()">Find a service</button>
+  </div>
+ </section>
+ <div class="sectionhead"><h2>Explore services</h2><p>Start with a category and find the help you need.</p></div>
+ <section class="grid" id="categories"></section>
+ <section class="panel"><h3>Are you a service provider?</h3><p>Apply to list your services on Servicify. Applications are reviewed before profiles go live.</p><div class="actions"><button class="primary" onclick="openProvider()">Apply to join</button><button class="secondary" onclick="showHow()">Learn how it works</button></div></section>
+ <section id="searchResults" class="panel" hidden><h3>Matching providers</h3><p>Provider search will show approved listings once they are added.</p></section>
+</main>
+<footer>© 2026 Servicify · Starting in Durban, South Africa<br>Find the right service. Connect with the right people.</footer>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="dialog"><button class="close" onclick="closeModal()">✕</button><div id="modalContent"></div><div id="status" class="status"></div></div></div>
+
+<!-- Supabase browser library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* IMPORTANT: replace the two values below with your Supabase Project URL
+   and Supabase Publishable key. Never put a secret/service_role key here. */
+const SUPABASE_URL = "https://cmohdhiaygjccqmjxgbr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nvjWI4yqhMXEwMyPPimflQ_a1MsDIMe";
+let db = null;
+if (window.supabase && SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("PASTE_") && !SUPABASE_PUBLISHABLE_KEY.includes("PASTE_")) {
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+}
+const categories=[
+ ["Electrical Services","⚡"],["Credit Assistance","📊"],["CCTV & Networking","📹"],
+ ["Catering","🍽️"],["Construction","🧱"],["Printing & Branding","🎨"],
+ ["Bookkeeping","🧾"],["Plumbing","🔧"],["Transport & Logistics","🚚"]
+];
+const select=document.getElementById('serviceSearch');
+categories.forEach(([name])=>{const o=document.createElement('option');o.value=name;o.textContent=name;select.appendChild(o)});
+document.getElementById('categories').innerHTML=categories.map(([name,emoji])=>`<button class="category" onclick="chooseCategory('${name.replace(/'/g,"\\'")}')"><span class="emoji">${emoji}</span><strong>${name}</strong><small>Explore providers</small></button>`).join('');
+function chooseCategory(name){select.value=name;searchProviders()}
+function searchProviders(){document.getElementById('searchResults').hidden=false;document.getElementById('searchResults').scrollIntoView({behavior:'smooth'})}
+function openModal(content){document.getElementById('modalContent').innerHTML=content;const s=document.getElementById('status');s.style.display='none';s.className='status';document.getElementById('modal').classList.add('open')}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function message(text,error=false){const s=document.getElementById('status');s.textContent=text;s.className=error?'status error':'status';s.style.display='block'}
+function showHow(){openModal(`<h2>How Servicify works</h2><p><b>1. Find a service.</b> Search by category and area.</p><p><b>2. Compare providers.</b> Review profiles, service areas and pricing.</p><p><b>3. Request a quote or booking.</b> Connect with the provider.</p><p><b>4. Pay securely.</b> Platform payments will be added after the marketplace foundation is ready.</p>`)}
+function openAuth(mode='login'){
+ const signup=mode==='signup';
+ openModal(`<h2>${signup?'Create your account':'Welcome back'}</h2><p>${signup?'Register with your email address.':'Sign in to your Servicify account.'}</p>
+ <form id="authForm"><label class="field"><span>Email address</span><input id="authEmail" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+ <label class="field"><span>Password</span><input id="authPassword" type="password" required minlength="6" autocomplete="${signup?'new-password':'current-password'}" placeholder="At least 6 characters"></label>
+ <button class="primary wide" type="submit">${signup?'Create account':'Sign in'}</button></form>
+ <p class="muted">${signup?'Already registered?':'New to Servicify?'} <a href="#" onclick="event.preventDefault();openAuth('${signup?'login':'signup'}')">${signup?'Sign in':'Create an account'}</a></p>`);
+ document.getElementById('authForm').addEventListener('submit',async e=>{
+  e.preventDefault();if(!db){message('The Supabase connection has not been configured in this file yet.',true);return}
+  const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;
+  const result=signup?await db.auth.signUp({email,password}):await db.auth.signInWithPassword({email,password});
+  if(result.error){message(result.error.message,true);return}
+  if(signup&&!result.data.session){message('Account created. Check your email for a confirmation link, then return here and sign in.');return}
+  message('You are signed in successfully.');setTimeout(()=>openAccount(),800);
+ });
+}
+function openAccount(){openModal(`<h2>Your Servicify account</h2><p>You are signed in. You can now submit a provider application.</p><button class="primary wide" onclick="openProviderForm()">Apply as a provider</button><button class="secondary wide" onclick="signOut()">Sign out</button>`)}
+async function signOut(){if(db)await db.auth.signOut();closeModal()}
+async function openProvider(){
+ if(!db){openModal('<h2>Provider registration</h2><p>The website still needs its Supabase details added to the source file before registration can work.</p>');return}
+ const {data}=await db.auth.getSession();
+ if(!data.session){openAuth('signup');return}
+ openProviderForm();
+}
+function openProviderForm(){
+ openModal(`<h2>Provider application</h2><p>Submit your details for review. Your listing will not go live until approved.</p>
+ <form id="providerForm">
+ <label class="field"><span>Business or provider name</span><input id="businessName" required maxlength="120"></label>
+ <label class="field"><span>Service category</span><select id="providerCategory" required>${categories.map(c=>`<option value="${c[0]}">${c[0]}</option>`).join('')}</select></label>
+ <label class="field"><span>Area you serve</span><input id="serviceArea" required placeholder="e.g. Durban, Umlazi, Pinetown"></label>
+ <label class="field"><span>Contact number</span><input id="providerPhone" required type="tel" maxlength="30"></label>
+ <button class="primary wide" type="submit">Submit application</button></form>`);
+ document.getElementById('providerForm').addEventListener('submit',async e=>{
+  e.preventDefault();const {data:sessionData}=await db.auth.getSession();if(!sessionData.session){message('Please sign in again.',true);return}
+  const payload={user_id:sessionData.session.user.id,business_name:document.getElementById('businessName').value.trim(),category:document.getElementById('providerCategory').value,service_area:document.getElementById('serviceArea').value.trim(),phone:document.getElementById('providerPhone').value.trim()};
+  const {error}=await db.from('provider_applications').insert(payload);
+  if(error){message(error.message,true);return}
+  message('Application received. It will be reviewed before your profile is listed.');
+  document.getElementById('providerForm').reset();
+ });
+}
+</script>
+</body>
+</html>
